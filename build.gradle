@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'io.elkrem'
+version '1.0.0'
+
+mainClassName = "io.elkrem.koynsync.Main"
+sourceCompatibility = 1.8
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'META-INF/MANIFEST.MF'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.bitcoinj:bitcoinj-core:0.14.7'
+    compile 'org.bitcoinj:bitcoinj-tools:0.14.7'
+    compile 'net.sf.jopt-simple:jopt-simple:5.0.4'
+}

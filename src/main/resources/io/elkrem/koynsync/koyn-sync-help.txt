@@ -1,0 +1,9 @@
+koyn-sync: Downloads and verifies Bitcoin blockchain headers
+
+Usage: koyn-sync --flags
+
+>>> OPTIONS
+  --net            Which network to connect to, can be main or test. (defaults to: test)
+  --out            Override the default headers file location.(defaults to: ./koyn/net/blkhdrs)
+  --peers          Override the maximum networks peers to connect to. (defaults to: 30)
+  --resync         Ignore local headers, and resync all again.

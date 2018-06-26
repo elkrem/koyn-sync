@@ -1,0 +1,19 @@
+# Java class files
+*.class
+
+# Intellij project files
+*.iml
+*.ipr
+*.iws
+.idea/
+.gradle/
+build/
+out/
+
+# OSX files
+.DS_Store
+
+# Windows thumbnail db
+Thumbs.db
+
+koyn/
