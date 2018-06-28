@@ -37,11 +37,11 @@ The download binary file can be found in either `./koyn/testnet/blkhdrs` or ``./
 ## Optional Flags
 
 ```
-  --help           Show this help message.
-  --net            Which network to connect to, can be main or test. (defaults to: test)
-  --out            Override the default headers file location.(defaults to: ./koyn/net/blkhdrs)
-  --peers          Override the maximum networks peers to connect to. (defaults to: 30)
-  --resync         Ignore local headers, and resync all again from genesis.
+  -h, --help           Show this help message.
+  -n, --net            Which network to connect to, can be main or test. (defaults to: test)
+  -o, --out            Override the default headers file location.(defaults to: ./koyn/net/blkhdrs)
+  -p, --peers          Override the maximum networks peers to connect to. (defaults to: 30)
+  -r, --resync         Ignore local headers, and resync all again from genesis.
 ```
 
 ## Building
