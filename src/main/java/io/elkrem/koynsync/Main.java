@@ -15,7 +15,14 @@ import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.Threading;
 import ru.creditnet.progressbar.ConsoleProgressBar;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -33,6 +40,14 @@ public class Main {
     private static NetworkParameters params;
     private static ArrayList<byte[]> list = new ArrayList<>();
     private static OptionSet options;
+    private static File headersFile;
+    private static FileLock lock;
+    private static FileChannel channel;
+    private static BlockStore store;
+    private static BlockChain chain;
+    private static PeerGroup peerGroup;
+    private static BufferedOutputStream out;
+
 
     public static void main(String[] args) {
         LogManager.getLogManager().reset();
@@ -78,7 +93,9 @@ public class Main {
             path = "koyn/" + netDirectory + "/blkhdrs";
         }
 
-        File headersFile = new File(path);
+        Runtime.getRuntime().addShutdownHook(new Thread(Main::releaseResources));
+
+        headersFile = new File(path);
         if (headersFile.exists()) {
             if (!options.has("resync")) {
                 try {
@@ -105,14 +122,24 @@ public class Main {
             }
         }
 
-        BlockStore store = new MemoryBlockStore(params);
-        BlockChain chain = null;
+        try {
+            channel = new RandomAccessFile(headersFile, "rw").getChannel();
+            lock = channel.tryLock();
+        } catch (OverlappingFileLockException | IOException e) {
+            System.err.println("Couldn't lock the headers file, exiting!");
+            releaseResources();
+            System.exit(1);
+        }
+
+
+        store = new MemoryBlockStore(params);
         MessageSerializer ser = new BitcoinSerializer(params, true);
 
         try {
             chain = new BlockChain(params, store);
         } catch (BlockStoreException e) {
             System.err.println("Couldn't initialize blockchain, exiting!");
+            releaseResources();
             System.exit(1);
         }
 
@@ -125,6 +152,7 @@ public class Main {
                 try {
                     chain.add(block);
                 } catch (Exception e) {
+                    bar.close();
                     System.err.println("Found some incorrect headers, and ignored them!");
                     list.subList(i, list.size()).clear();
                     break;
@@ -135,36 +163,33 @@ public class Main {
         }
 
 
-        PeerGroup peerGroup = new PeerGroup(params, chain);
+        peerGroup = new PeerGroup(params, chain);
         peerGroup.setFastCatchupTimeSecs(new Date().getTime() / 1000);
         startPeerGroup(peerGroup);
 
         int blockToSync = peerGroup.getMostCommonChainHeight();
 
-        BufferedOutputStream out = null;
-        try {
-            out = new BufferedOutputStream(new FileOutputStream(headersFile));
-        } catch (FileNotFoundException e) {
-            System.err.println("Couldn't find local headers file, exiting!");
-            System.exit(1);
-        }
+        out = new BufferedOutputStream(Channels.newOutputStream(channel), 100 * 80);
+
         for (byte[] aList : list) {
             try {
                 out.write(aList);
             } catch (IOException e) {
                 System.err.println("Couldn't write to local headers file, exiting!");
+                releaseResources();
                 System.exit(1);
             }
         }
 
 
         if (list.size() >= blockToSync) {
-            System.out.println("Local headers is up to date, no need to sync.");
+            System.out.println("Local headers are is up to date, no need to sync.");
             try {
                 out.flush();
                 out.close();
             } catch (IOException e) {
                 System.err.println("Couldn't save local headers file, exiting!");
+                releaseResources();
                 System.exit(1);
             }
         } else {
@@ -178,6 +203,7 @@ public class Main {
                     finalOut.write(header);
                 } catch (IOException e) {
                     System.err.println("Couldn't write to local headers file, exiting!");
+                    releaseResources();
                     System.exit(1);
                 }
                 bar.stepTo(block.getHeight());
@@ -187,9 +213,10 @@ public class Main {
                         bar.close();
                         finalOut.flush();
                         finalOut.close();
-                        System.out.println("All headers synced and verified successfully..");
+                        System.out.println("All headers has been synced and verified successfully..");
                     } catch (IOException e) {
                         System.err.println("Couldn't save local headers file, exiting!");
+                        releaseResources();
                         System.exit(1);
                     }
                 }
@@ -206,9 +233,12 @@ public class Main {
                 store.close();
             } catch (BlockStoreException e) {
                 System.err.println("Couldn't release resources, exiting!");
+                releaseResources();
                 System.exit(1);
             }
         }
+
+        releaseResources();
 
         try {
             System.out.println("\nPress Enter key to exit..");
@@ -230,8 +260,23 @@ public class Main {
                 future.get(60, SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 System.err.println("Couldn't connect to any peers, exiting!");
+                releaseResources();
                 System.exit(1);
             }
+        }
+    }
+
+    private static void releaseResources() {
+        try {
+            if (peerGroup != null) peerGroup.stop();
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+            if (store != null) store.close();
+            if (lock != null) lock.release();
+            if (channel != null) channel.close();
+        } catch (Exception ignored) {
         }
     }
 }
