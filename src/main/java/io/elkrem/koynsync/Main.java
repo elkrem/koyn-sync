@@ -205,6 +205,7 @@ public class Main {
                 try {
                     finalOut.write(header);
                 } catch (IOException e) {
+                    bar.close();
                     System.err.println("Couldn't write to local headers file, exiting!");
                     releaseResources();
                     System.exit(1);
