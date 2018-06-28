@@ -61,7 +61,12 @@ public class Main {
         parser.accepts("peers").withRequiredArg().ofType(Integer.class).defaultsTo(30);
         parser.accepts("resync");
 
-        options = parser.parse(args);
+        try {
+            options = parser.parse(args);
+        } catch (Exception ignored) {
+            System.out.println("Incorrect arguments supplied, please check the docs and try again.");
+            System.exit(1);
+        }
 
         if (options.has("help")) {
             try {
