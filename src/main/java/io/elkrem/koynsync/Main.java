@@ -50,8 +50,6 @@ public class Main {
 
 
     public static void main(String[] args) {
-        LogManager.getLogManager().reset();
-
         String path;
 
         OptionParser parser = new OptionParser();

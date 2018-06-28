@@ -30,4 +30,6 @@ repositories {
 dependencies {
     compile 'org.bitcoinj:bitcoinj-core:0.14.7'
     compile 'net.sf.jopt-simple:jopt-simple:5.0.4'
+    compile 'org.slf4j:slf4j-nop:1.7.25'
+
 }
