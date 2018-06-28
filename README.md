@@ -2,9 +2,11 @@
 
 ## Overview
 
-koyn-sync is a java command line tool that downloads and verifies Bitcoin blockchain headers and save them to a binary file.
+koyn-sync is a java command line tool that downloads and verifies Bitcoin blockchain headers and save them locally to a binary file.
 
-It can be used to preload Bitcoin blockchain headers to a microSD before using it with [Koyn Arduino Library](https://github.com/elkrem/koyn).
+It supports syncing and verification resumption starting from the last downloaded header on subsequent runs. (This can be useful when updating previously synced headers with only the remaining ones.)
+
+This tool can be used to preload Bitcoin blockchain headers to a microSD before using it with [Koyn Arduino Library](https://github.com/elkrem/koyn).
 
 ## Download
 
@@ -20,7 +22,7 @@ Reading local headers..
 Verifying local headers: 100% [ 287945 / 287945 ] 0:00:06 / 0:00:00
 Connecting to network..
 Downloading and verifying headers: 100% [ 1326406 / 1326406 ] 0:02:59 / 0:00:00
-All headers synced and verified successfully..
+All headers has been synced and verified successfully..
 
 Press Enter key to exit..
 
@@ -28,13 +30,18 @@ Press Enter key to exit..
 
 Windows users can optionally run `koyn-syn-VERSION.exe` directly.
 
+## Headers File Location
+
+The download binary file can be found in either `./koyn/testnet/blkhdrs` or ``./koyn/mainnet/blkhdrs`
+
 ## Optional Flags
 
 ```
+  --help           Show this help message.
   --net            Which network to connect to, can be main or test. (defaults to: test)
   --out            Override the default headers file location.(defaults to: ./koyn/net/blkhdrs)
   --peers          Override the maximum networks peers to connect to. (defaults to: 30)
-  --resync         Ignore local headers, and resync all again.
+  --resync         Ignore local headers, and resync all again from genesis.
 ```
 
 ## Building
