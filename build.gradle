@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'io.elkrem'
-version '1.0.0'
+version '1.0.1'
 
 mainClassName = "io.elkrem.koynsync.Main"
 sourceCompatibility = 1.8
@@ -29,6 +29,5 @@ repositories {
 
 dependencies {
     compile 'org.bitcoinj:bitcoinj-core:0.14.7'
-    compile 'org.bitcoinj:bitcoinj-tools:0.14.7'
     compile 'net.sf.jopt-simple:jopt-simple:5.0.4'
 }
