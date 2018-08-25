@@ -32,7 +32,7 @@ Windows users can optionally run `koyn-syn-VERSION.exe` directly.
 
 ## Headers File Location
 
-The download binary file can be found in either `./koyn/testnet/blkhdrs` or ``./koyn/mainnet/blkhdrs`
+The download binary file can be found in either `./koyn/testnet/blkhdrs` or `./koyn/mainnet/blkhdrs`
 
 ## Optional Flags
 
